@@ -1,4 +1,4 @@
-# CyberTriage
+# CyberTriage (测试)
 
 AI-driven Emergency Response Platform — 智能应急响应分析平台
 
@@ -41,6 +41,11 @@ go run cmd/server/main.go
 ```
 
 Open http://localhost:8080
+
+<img width="1920" height="998" alt="72631a87a6c804e4afe708e8d941ba07" src="https://github.com/user-attachments/assets/6b9c3f94-944e-4230-a999-2b2ef78a2f2b" />
+
+<img width="1920" height="995" alt="93b93d21b6fea220a175828a4d25a88e" src="https://github.com/user-attachments/assets/69f57fe6-bb0c-4abd-904f-6a742c0e1780" />
+
 
 ### Configure AI Model
 
