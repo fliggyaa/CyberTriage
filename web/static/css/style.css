@@ -575,33 +575,6 @@ table tr:hover { background: rgba(0,212,255,0.02); }
     box-shadow: 0 1px 0 var(--primary-glow);
 }
 
-/* ---- Detail Tab Close Button ---- */
-#detail-tab {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.detail-tab-close {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    font-size: 14px;
-    line-height: 1;
-    cursor: pointer;
-    color: var(--text-secondary);
-    transition: var(--transition);
-    flex-shrink: 0;
-}
-
-.detail-tab-close:hover {
-    color: #ef4444;
-    background: rgba(239,68,68,0.1);
-}
-
 /* ---- Modal ---- */
 .modal-overlay {
     position: fixed;

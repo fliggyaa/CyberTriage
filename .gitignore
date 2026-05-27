@@ -1,10 +1,14 @@
 # Binary
 server.exe
 *.exe
+*.exe~
 
 # Data
 data/*.db
 data/uploads/
+
+# Collection data (sample files)
+emergency_collection_*.json
 
 # IDE
 .vscode/

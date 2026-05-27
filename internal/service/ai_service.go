@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 
@@ -101,50 +100,41 @@ func RunAIAnalysis(report *model.Report, taskName, osType, endpoint, apiKey, mod
 }
 
 func extractRiskLevel(analysis string) string {
-	// Find the line/context around "威胁等级" and extract risk keyword within ~60 chars.
-	// Only match within the SAME line to avoid cross-paragraph false positives.
-	idx := strings.Index(analysis, "威胁等级")
-	if idx >= 0 {
-		// Extract up to 80 chars from "威胁等级" (same-line scope)
-		end := idx + 80
-		if end > len(analysis) {
-			end = len(analysis)
-		}
-		snippet := analysis[idx:end]
-		// Cut at newline to stay on the same line
-		if nl := strings.IndexAny(snippet, "\r\n"); nl >= 0 {
-			snippet = snippet[:nl]
-		}
-		snippetLower := strings.ToLower(snippet)
+	analysisLower := strings.ToLower(analysis)
 
-		// Ordered: longer/more-specific patterns first to avoid partial matches
-		levelPatterns := []struct {
-			level  string
-			regex  string
-		}{
-			{"critical", `(?:严重|critical)`},
-			{"high", `(?:高危|high)`},
-			{"medium", `(?:中危|medium)`},
-			{"low", `(?:低危|low)`},
-			{"info", `(?:信息|info)`},
-		}
-		for _, lp := range levelPatterns {
-			if matched, _ := regexp.MatchString(lp.regex, snippetLower); matched {
-				return lp.level
-			}
-		}
+	riskPatterns := []struct {
+		level   string
+		pattern string
+	}{
+		{"critical", "威胁等级.*critical"},
+		{"critical", "威胁等级.*严重"},
+		{"high", "威胁等级.*high"},
+		{"high", "威胁等级.*高危"},
+		{"high", "威胁等级.*高"},
+		{"medium", "威胁等级.*medium"},
+		{"medium", "威胁等级.*中危"},
+		{"medium", "威胁等级.*中"},
+		{"low", "威胁等级.*low"},
+		{"low", "威胁等级.*低危"},
+		{"low", "威胁等级.*低"},
+		{"info", "威胁等级.*info"},
+		{"info", "威胁等级.*信息"},
+	}
 
-		// Fallback: single-char patterns (must NOT be part of longer words)
-		// "高" alone but NOT "高危" already checked above
-		if matched, _ := regexp.MatchString(`(?:^|[^\x{4e00}-\x{9fff}])高(?:[^\x{4e00}-\x{9fff}]|$)`, snippet); matched {
-			return "high"
+	for _, rp := range riskPatterns {
+		if strings.Contains(analysisLower, strings.ToLower(rp.pattern)) {
+			return rp.level
 		}
-		if matched, _ := regexp.MatchString(`(?:^|[^\x{4e00}-\x{9fff}])中(?:[^\x{4e00}-\x{9fff}]|$)`, snippet); matched {
-			return "medium"
-		}
-		if matched, _ := regexp.MatchString(`(?:^|[^\x{4e00}-\x{9fff}])低(?:[^\x{4e00}-\x{9fff}]|$)`, snippet); matched {
-			return "low"
-		}
+	}
+
+	if strings.Contains(analysisLower, "严重") {
+		return "critical"
+	}
+	if strings.Contains(analysisLower, "高危") {
+		return "high"
+	}
+	if strings.Contains(analysisLower, "中危") {
+		return "medium"
 	}
 
 	return "unknown"

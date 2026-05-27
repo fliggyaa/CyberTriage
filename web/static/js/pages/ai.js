@@ -130,23 +130,19 @@ const AIPage = {
 
     _restoreResult(container) {
         const r = this._lastResult;
+        // Set select values as strings for compatibility
         const taskSel = container.querySelector('#ai-task-select');
         const modelSel = container.querySelector('#ai-model-select');
         if (taskSel) {
-            // Check if the task still exists in the loaded options
-            let taskExists = false;
-            for (const opt of taskSel.options) {
-                if (opt.value === String(r.taskId)) {
-                    taskExists = true;
-                    break;
-                }
-            }
-            if (!taskExists) {
-                // Task was deleted, clear cached result
-                this._lastResult = null;
-                return;
-            }
             taskSel.value = String(r.taskId);
+            // If the option doesn't exist (task deleted), add it temporarily
+            if (!taskSel.value || taskSel.value === '') {
+                const opt = document.createElement('option');
+                opt.value = String(r.taskId);
+                opt.textContent = `#${r.taskId} (已恢复)`;
+                taskSel.appendChild(opt);
+                taskSel.value = String(r.taskId);
+            }
         }
         if (modelSel) modelSel.value = String(r.modelId);
         const statusEl = container.querySelector('#ai-status');

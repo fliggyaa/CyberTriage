@@ -2,7 +2,6 @@ const ReportPage = {
     currentTab: 'upload',
     chartInstances: {},
     reports: [],
-    _renaming: false,
 
     async render(container) {
         container.innerHTML = `
@@ -16,7 +15,7 @@ const ReportPage = {
             <div class="tabs">
                 <div class="tab-item active" data-tab="upload">上传文件</div>
                 <div class="tab-item" data-tab="list">报告列表</div>
-                <div class="tab-item" data-tab="detail" style="display:none" id="detail-tab"><span class="detail-tab-label">报告详情</span><span class="detail-tab-close" title="关闭">&times;</span></div>
+                <div class="tab-item" data-tab="detail" style="display:none" id="detail-tab">报告详情</div>
             </div>
             <div id="tab-content"></div>
         `;
@@ -42,19 +41,6 @@ const ReportPage = {
             if (this.currentTab === 'upload') await this.showUpload(container);
             else if (this.currentTab === 'list') await this.showList(container);
         });
-
-        // Close button on detail tab
-        const closeBtn = container.querySelector('.detail-tab-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.destroyCharts();
-                const detailTab = container.querySelector('#detail-tab');
-                if (detailTab) detailTab.style.display = 'none';
-                this._detail = null;
-                this.showList(container);
-            });
-        }
     },
 
     async showUpload(container) {
@@ -221,8 +207,7 @@ const ReportPage = {
         // Make detail tab visible with task name
         const detailTab = container.querySelector('#detail-tab');
         detailTab.style.display = '';
-        const labelEl = detailTab.querySelector('.detail-tab-label');
-        if (labelEl) labelEl.textContent = taskName;
+        detailTab.textContent = taskName;
         
         // Activate detail tab
         container.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
@@ -278,29 +263,21 @@ const ReportPage = {
         });
 
         const doRename = async () => {
-            // Prevent concurrent calls (blur fires after Enter hides the input)
-            if (this._renaming) return;
             const newName = inputEl.value.trim();
             if (!newName || newName === task.name) {
                 displayEl.style.display = '';
                 editEl.style.display = 'none';
                 return;
             }
-            this._renaming = true;
             try {
                 await API.tasks.update(task.id, { name: newName, os_type: task.os_type, description: task.description || '' });
                 task.name = newName;
                 displayEl.textContent = newName;
                 const detailTab = container.querySelector('#detail-tab');
-                if (detailTab) {
-                    const labelEl = detailTab.querySelector('.detail-tab-label');
-                    if (labelEl) labelEl.textContent = newName;
-                }
+                if (detailTab) detailTab.textContent = newName;
                 showToast('任务已重命名', 'success');
             } catch (e) {
                 showToast('重命名失败: ' + e.message, 'error');
-            } finally {
-                this._renaming = false;
             }
             displayEl.style.display = '';
             editEl.style.display = 'none';
@@ -309,16 +286,12 @@ const ReportPage = {
         inputEl.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') { e.preventDefault(); doRename(); }
             if (e.key === 'Escape') {
-                this._renaming = false;
                 displayEl.style.display = '';
                 editEl.style.display = 'none';
             }
         });
-        // Blur: only trigger rename if still editing (not already closing)
         inputEl.addEventListener('blur', () => {
-            if (editEl.style.display !== 'none' && !this._renaming) {
-                setTimeout(doRename, 150);
-            }
+            setTimeout(doRename, 150);
         });
     },
 

@@ -484,9 +484,7 @@ try {
 } catch {}
 $result.reg_security_keys = $regSecurityKeys
 
-# Save results (no BOM for cross-platform compatibility)
-$jsonOutput = $result | ConvertTo-Json -Depth 5
-[System.IO.File]::WriteAllText($outputFile, $jsonOutput, [System.Text.UTF8Encoding]::new($false))
+# Save results
 Write-Host ""
 Write-Host "========================================"
 Write-Host "  Collection Complete!"
