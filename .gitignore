@@ -1,0 +1,17 @@
+# Binary
+server.exe
+*.exe
+
+# Data
+data/*.db
+data/uploads/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
